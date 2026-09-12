@@ -1,0 +1,7 @@
+You are an expert AI Engineer building an Enterprise Hybrid GraphRAG pipeline in Python 3.11+.
+- Use modern LangChain community/core packages; DO NOT use deprecated AgentExecutor or old langchain imports.
+- Vector database: Qdrant client using hybrid search (dense embeddings + sparse vectors).
+- Reranker: Cohere Rerank v3.
+- Knowledge Graph: Neo4j / NetworkX entity-relation triplets.
+- Frontend: Clean Streamlit UI with tabs for 'Chat Interface', 'Graph Visualizer', and 'Ragas Evaluation Benchmark'.
+- Code must use strict type hints, Pydantic v2 schemas, and structured logging.

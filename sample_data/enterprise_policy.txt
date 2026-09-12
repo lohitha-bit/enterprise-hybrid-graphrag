@@ -1,0 +1,149 @@
+================================================================================
+CLINICAL PROTOCOLS & GOVERNANCE MANUAL (POLICY REF: MED-GOV-2026-V3)
+ST. JUDE REGIONAL HEALTH NETWORK & INTEGRATED AMBULATORY SITES
+================================================================================
+
+================================================================================
+PART 1: CLINICAL ESCALATION & SEVERE SEPSIS MANAGEMENT (PROTOCOL SEP-3)
+================================================================================
+
+1.1 SCOPE AND TARGET POPULATION
+This protocol applies to all adult inpatient units, the Emergency Department (ED), 
+and the Intensive Care Unit (ICU). Pediatric patients (under 18 years) must be 
+routed to Pediatric Protocol P-ED-44 immediately.
+
+1.2 INITIAL SCREENING CRITERIA: SOFA SCORE THRESHOLDS
+Staff must calculate the Sequential Organ Failure Assessment (SOFA) score upon any 
+patient presenting with two or more Systemic Inflammatory Response Syndrome (SIRS) 
+criteria:
+- Body core temperature above 38.3°C or below 36.0°C.
+- Heart rate greater than 90 beats per minute.
+- Respiratory rate greater than 20 breaths per minute.
+- White blood cell count (WBC) greater than 12,000/mcL or greater than 10% immature bands.
+
+If a patient exhibits an acute increase of the SOFA score by 2 points or more from 
+their known baseline, the bedside Registered Nurse (RN) must immediately trigger a 
+"Code Sepsis" alert via the electronic health record (EHR) console.
+
+1.3 TIME-CRITICAL INTERVENTIONS: THE 1-HOUR INITIATION BUNDLE
+Upon triggering a Code Sepsis alert, the following five interventions must be 
+initiated within exactly 60 minutes of zero-time (time of alert confirmation):
+1. Serum Lactate Measurement: Draw venous or arterial blood for lactate testing. 
+   If initial lactate is greater than 2.0 mmol/L, remeasure within 2 to 4 hours.
+2. Blood Cultures: Obtain two sets of blood cultures (one aerobic, one anaerobic) 
+   prior to antibiotic administration. However, antibiotic therapy must never be 
+   delayed by more than 45 minutes if blood culture acquisition proves difficult.
+3. Broad-Spectrum Antimicrobial Administration: Administer IV Piperacillin-Tazobactam 
+   (3.375g every 6 hours via extended 4-hour infusion). In patients with documented 
+   penicillin anaphylaxis, substitute with Vancomycin (15-20 mg/kg IV loading dose) 
+   combined with Cefepime (2g IV every 8 hours).
+4. Rapid Fluid Resuscitation: If mean arterial pressure (MAP) is below 65 mmHg or 
+   initial blood lactate is 4.0 mmol/L or greater, begin rapid IV administration of 
+   crystalloid solution (specifically Plasma-Lyte A or Lactated Ringer's) at 
+   30 mL per kilogram of ideal body weight. Normal Saline (0.9% NaCl) is explicitly 
+   prohibited for volumes exceeding 1,000 mL due to hyperchloremic metabolic acidosis risks.
+5. Vasopressor Administration: If MAP remains below 65 mmHg following 50% completion 
+   of the crystalloid bolus, immediately initiate peripheral Norepinephrine at 
+   0.05 mcg/kg/min, titrating upward by 0.02 mcg/kg/min every 5 minutes to achieve 
+   a target MAP between 65 and 75 mmHg.
+
+1.4 REPORTING HIERARCHY AND CLINICAL OVERSIGHT
+The bedside RN reports immediately to the Medical Officer on Duty (MOOD). If MAP 
+does not respond within 30 minutes of initiating vasopressors, the MOOD must escalate 
+directly to the Critical Care Specialist (Intensivist On Call). The Intensivist on Call 
+assumes primary command of the case and retains sole authority to order invasive 
+arterial line placement or secondary inotropic agents (Epinephrine or Vasopressin).
+
+
+================================================================================
+PART 2: PHARMACEUTICAL CONTRAINDICATIONS & MEDICATION RECONCILIATION
+================================================================================
+
+2.1 HIGH-ALERT MEDICATION PROTOCOLS
+All prescription orders for therapeutic anticoagulants, antiarrhythmic agents, and 
+controlled analgesics must be verified through dual-pharmacist independent review 
+prior to automated dispensing cabinet (ADC) release.
+
+2.2 NOVEL ORAL ANTICOAGULANT (NOAC) & DIRECT ORAL ANTICOAGULANT (DOAC) RESTRICTIONS
+Apixaban (Eliquis) and Rivaroxaban (Xarelto) are classified as Class II High-Alert 
+Anticoagulants. 
+- In patients undergoing emergent surgery, Apixaban must be suspended for a minimum 
+  of 48 hours prior to incision for high-bleed-risk procedures, or 24 hours for 
+  low-bleed-risk interventions.
+- Reversal Agent Protocols: In cases of life-threatening hemorrhagic shock secondary 
+  to Factor Xa inhibitors (Apixaban or Rivaroxaban), the attending emergency physician 
+  must administer Andexanet Alfa (Andexxa). 
+  - Low-dose regimen: 400 mg IV bolus followed by 4 mg/min for 120 minutes.
+  - High-dose regimen: 800 mg IV bolus followed by 8 mg/min for 120 minutes (mandatory 
+    if the last dose of Factor Xa inhibitor was taken within 8 hours).
+- If Andexanet Alfa is unavailable or out of stock, 4-Factor Prothrombin Complex 
+  Concentrate (4F-PCC / Kcentra) is approved as a secondary alternative at a fixed 
+  dose of 50 units/kg (maximum 5,000 units), subject to immediate verbal approval from 
+  the Chief of Transfusion Medicine.
+
+2.3 CRITICAL PHARMACOKINETIC DRUG-DRUG INTERACTIONS
+- Clarithromycin, Ketoconazole, and Ritonavir are potent CYP3A4 and P-glycoprotein (P-gp) 
+  inhibitors. Co-administration with Apixaban is contraindicated; dose reduction by 
+  50% is permitted only if no clinical alternative exists and serum anti-Xa levels 
+  can be monitored every 12 hours.
+- Amiodarone and Warfarin: When initiating Amiodarone in a patient stabilized on Warfarin, 
+  the weekly Warfarin dosage must automatically be decreased by 33% to 50% starting on Day 1 
+  to prevent profound INR elevation. INR must be re-checked on Days 3, 7, and 14.
+
+2.4 INCIDENT DOCUMENTATION & ADVERSE DRUG REACTION (ADR) REPORTING
+Any adverse drug reaction categorized as Severity Grade 3 (severe, non-life-threatening) 
+or Grade 4 (life-threatening) must be submitted via the Internal Safety Event Portal (ISEP) 
+within 4 hours of stabilization. The Clinical Pharmacist Specialist must submit a 
+formal MedWatch Form FDA 3500 within 24 hours to the Patient Safety Committee.
+
+
+================================================================================
+PART 3: COMPLIANCE, INCIDENT INVESTIGATION, AND AUDIT GOVERNANCE
+================================================================================
+
+3.1 REGULATORY COMPLIANCE OVERSIGHT
+All clinical departments operate under the joint oversight of the Department of Clinical 
+Governance, the Joint Commission Standards Office, and the Hospital Quality Assurance 
+Committee (HQAC). 
+
+3.2 ROOT CAUSE ANALYSIS (RCA) WORKFLOW FOR SENTINEL EVENTS
+A Sentinel Event is defined as an unexpected occurrence involving death, serious physical 
+or psychological injury, or the immediate risk thereof. Sentinel events include, but are 
+not limited to: medication administration errors resulting in cardiac arrest, wrong-site 
+surgical incisions, inpatient suicides, and unmonitored falls resulting in intracranial hemorrhage.
+
+When a Sentinel Event occurs, the following strict timeline must be executed:
+- Within 2 Hours: The Unit Nurse Manager must verbally notify the Chief Medical Officer 
+  (CMO) and the Chief Quality Officer (CQO).
+- Within 12 Hours: The Patient Safety Liaison must freeze all medical records and audit logs 
+  associated with the event. No retroactive chart modifications or late progress notes are 
+  permitted without explicit digital sign-off from the Legal Risk Management Department.
+- Within 72 Hours: An interdisciplinary Root Cause Analysis (RCA) Team is formed. The RCA 
+  Team consists of:
+  * The Lead Patient Safety Investigator (Team Lead)
+  * The Chief Pharmacist (or designated Clinical Specialist)
+  * The Nursing Clinical Practice Director
+  * Two independent, non-involved peer physicians from external clinical units.
+- Within 30 Calendar Days: The RCA Team must submit a complete Comprehensive Systematic 
+  Analysis and Action Plan (CSAAP) to the HQAC Board of Directors.
+
+3.3 CLINICAL AUDIT THRESHOLDS AND CORRECTIVE ACTION PLANS (CAP)
+Every quarterly reporting period, clinical units undergo random audits assessing 15% of all 
+discharged patient charts.
+- Standard Compliance Benchmark: Units must achieve a minimum overall compliance score of 88%.
+- Conditional Probation: If a unit achieves between 75% and 87.9%, the Department Chairperson 
+  must submit a 60-day Corrective Action Plan (CAP) to the Chief Quality Officer.
+- Mandatory Suspension of Elective Services: If a unit scores below 75% for two consecutive 
+  quarters, the CMO retains executive authority to suspend elective admissions or non-emergent 
+  procedures in that specific clinical department until an external audit validates full remediation.
+
+3.4 WHISTLEBLOWER PROTECTION AND ETHICS HOTLINE
+Hospital employees, medical residents, and contract staff who report safety violations, 
+unauthorized protocol alterations, or falsification of audit data are protected under Network 
+Policy GOV-W-104 (Whistleblower Integrity Act). Retaliatory measures—including schedule 
+demotions, unfavorable performance evaluations, or administrative leave—are strictly illegal. 
+Suspected non-compliance may be reported 24/7 anonymously via the Compliance Ethics Hotline 
+(Extension 4490) or directly to the Director of Regulatory Integrity.
+================================================================================
+END OF MANUAL
+================================================================================

@@ -1,0 +1,17 @@
+# Environment secrets (DO NOT COMMIT)
+.env
+*.env
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python cache & temp files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local Qdrant storage if created
+.qdrant_local/
