@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Environment secrets (DO NOT COMMIT)
 .env
 *.env
@@ -15,3 +16,93 @@ __pycache__/
 
 # Local Qdrant storage if created
 .qdrant_local/
+=======
+# =====================================================================
+# Environment Secrets & API Keys (CRITICAL - DO NOT COMMIT)
+# =====================================================================
+.env
+*.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Streamlit secrets & local config
+.streamlit/secrets.toml
+
+# =====================================================================
+# Virtual Environments & Packages
+# =====================================================================
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+# =====================================================================
+# Vector Store & Local Database Storage
+# =====================================================================
+# Local Qdrant snapshot / persistence directories
+.qdrant_local/
+qdrant_storage/
+*.sqlite
+*.db
+
+# =====================================================================
+# Python Cache & Build Artifacts
+# =====================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =====================================================================
+# Testing, Evaluation & Linting Caches
+# =====================================================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+
+# =====================================================================
+# IDEs & Editor Configuration (Cursor, VS Code, JetBrains)
+# =====================================================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# =====================================================================
+# Operating System Junk
+# =====================================================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+>>>>>>> 6321ac5 (Fresh initial commit)
