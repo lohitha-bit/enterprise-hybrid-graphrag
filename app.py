@@ -83,8 +83,9 @@ def get_llm() -> ChatGroq:
     return ChatGroq(
         model="qwen/qwen3.8-27b",
         temperature=0.1,
+        max_tokens=600,
         streaming=True,
-        api_key=os.getenv("GROQ_API_KEY")
+        api_key=os.getenv("GROQ_API_KEY"),
     )
 
 def get_graph_engine() -> GraphEngine:

@@ -21,9 +21,10 @@ class GraphEngine:
     def __init__(self):
         self.graph = nx.DiGraph()
         self.llm = ChatGroq(
-            model="qwen/qwen3.8-27b",
+            model="llama-3.3-70b-versatile",
             temperature=0,
-            api_key=os.getenv("GROQ_API_KEY")
+            max_tokens=1024,
+            api_key=os.getenv("GROQ_API_KEY"),
         )
 
     def add_triplets(self, triplets: list[EntityRelation], source: str = "seed"):
