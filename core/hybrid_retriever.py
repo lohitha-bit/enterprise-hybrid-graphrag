@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import logging
 import os
 from typing import Any
@@ -49,7 +50,7 @@ class HybridRerankRetriever:
     Flow:
       1. Prefetch dense (BAAI/bge-small-en-v1.5) and sparse (Qdrant/bm25) hits
       2. Fuse with Reciprocal Rank Fusion → top 10 candidates
-      3. Rerank with ``rerank-english-v3.0`` → return top 3 + confidence scores
+      3. Rerank with rerank-english-v3.0 → return top 3 + confidence scores
     """
 
     def __init__(
@@ -95,7 +96,7 @@ class HybridRerankRetriever:
         """
         Hybrid search + Cohere rerank.
 
-        Returns the top ``top_n`` chunks (default 3) with confidence scores.
+        Returns top_n chunks (default 3) with confidence scores.
         """
         if not query or not query.strip():
             raise ValueError("query must be a non-empty string")
@@ -109,25 +110,29 @@ class HybridRerankRetriever:
         return self._rerank(query_text, candidates)
 
     def _hybrid_search(self, query: str) -> list[dict[str, Any]]:
-        """Prefetch dense + sparse, fuse with RRF, return top ``hybrid_limit`` hits."""
-        response = self.client.query_points(
-            collection_name=self.collection_name,
-            prefetch=[
-                models.Prefetch(
-                    query=models.Document(text=query, model=DENSE_MODEL),
-                    using=DENSE_VECTOR_NAME,
-                    limit=self.prefetch_limit,
-                ),
-                models.Prefetch(
-                    query=models.Document(text=query, model=SPARSE_MODEL),
-                    using=SPARSE_VECTOR_NAME,
-                    limit=self.prefetch_limit,
-                ),
-            ],
-            query=models.FusionQuery(fusion=models.Fusion.RRF),
-            limit=self.hybrid_limit,
-            with_payload=True,
-        )
+        """Prefetch dense + sparse, fuse with RRF, return top hybrid_limit hits."""
+        try:
+            response = self.client.query_points(
+                collection_name=self.collection_name,
+                prefetch=[
+                    models.Prefetch(
+                        query=models.Document(text=query, model=DENSE_MODEL),
+                        using=DENSE_VECTOR_NAME,
+                        limit=self.prefetch_limit,
+                    ),
+                    models.Prefetch(
+                        query=models.Document(text=query, model=SPARSE_MODEL),
+                        using=SPARSE_VECTOR_NAME,
+                        limit=self.prefetch_limit,
+                    ),
+                ],
+                query=models.FusionQuery(fusion=models.Fusion.RRF),
+                limit=self.hybrid_limit,
+                with_payload=True,
+            )
+        except Exception as err:
+            logger.error("Error executing hybrid search against Qdrant: %s", err)
+            raise
 
         hits: list[dict[str, Any]] = []
         for point in response.points:
@@ -160,15 +165,19 @@ class HybridRerankRetriever:
         query: str,
         candidates: list[dict[str, Any]],
     ) -> list[RetrievedChunk]:
-        """Pass candidates to Cohere rerank-english-v3.0; keep top ``top_n``."""
+        """Pass candidates to Cohere rerank; keep top top_n."""
         documents = [c["text"] for c in candidates]
-        response = self._cohere.rerank(
-            model=self.rerank_model,
-            query=query,
-            documents=documents,
-            top_n=min(self.top_n, len(documents)),
-            return_documents=False,
-        )
+        try:
+            response = self._cohere.rerank(
+                model=self.rerank_model,
+                query=query,
+                documents=documents,
+                top_n=min(self.top_n, len(documents)),
+                return_documents=False,
+            )
+        except Exception as err:
+            logger.error("Cohere rerank failed: %s", err)
+            raise
 
         results: list[RetrievedChunk] = []
         for rank, item in enumerate(response.results, start=1):
@@ -183,6 +192,10 @@ class HybridRerankRetriever:
                     point_id=src.get("point_id"),
                 )
             )
+
+        # Force garbage collection to prevent memory spikes in Streamlit containers
+        del documents
+        gc.collect()
 
         logger.info(
             "Reranked to top %d (model=%s); best_score=%.4f",

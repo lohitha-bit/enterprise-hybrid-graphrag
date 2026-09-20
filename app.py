@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import gc
 import logging
 import os
-import re
+import traceback
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -48,9 +49,11 @@ Be concise, precise, and cite policy thresholds, numbers, and chains of command 
 {graph_context}
 """
 
+
 def _ensure_sample_policy() -> Path:
     SAMPLE_POLICY_PATH.parent.mkdir(parents=True, exist_ok=True)
     return SAMPLE_POLICY_PATH
+
 
 def _build_qdrant_client() -> QdrantClient:
     url = os.getenv("QDRANT_URL", "").strip()
@@ -58,6 +61,7 @@ def _build_qdrant_client() -> QdrantClient:
     if url:
         return QdrantClient(url=url, api_key=api_key or None, timeout=60)
     return QdrantClient(path=str(ROOT / ".qdrant_local"))
+
 
 def _init_session() -> None:
     defaults: dict[str, Any] = {
@@ -74,9 +78,11 @@ def _init_session() -> None:
         if key not in st.session_state:
             st.session_state[key] = value
 
+
 @st.cache_resource(show_spinner=False)
 def get_qdrant_client() -> QdrantClient:
     return _build_qdrant_client()
+
 
 @st.cache_resource(show_spinner=False)
 def get_llm() -> ChatGroq:
@@ -88,10 +94,12 @@ def get_llm() -> ChatGroq:
         api_key=os.getenv("GROQ_API_KEY"),
     )
 
+
 def get_graph_engine() -> GraphEngine:
     if st.session_state.graph_engine is None:
         st.session_state.graph_engine = GraphEngine()
     return st.session_state.graph_engine
+
 
 def get_retriever() -> HybridRerankRetriever:
     if st.session_state.retriever is None:
@@ -100,6 +108,7 @@ def get_retriever() -> HybridRerankRetriever:
             st.session_state.collection_name,
         )
     return st.session_state.retriever
+
 
 def seed_demo_graph(engine: GraphEngine) -> None:
     if engine.graph.number_of_nodes() > 0:
@@ -114,8 +123,10 @@ def seed_demo_graph(engine: GraphEngine) -> None:
     ]
     engine.add_triplets(demo, source="demo_seed")
 
+
 def graph_context_for_query(engine: GraphEngine, query: str) -> str:
     return engine.query_related_entities(query)
+
 
 def format_chunks_block(chunks: list[RetrievedChunk]) -> str:
     if not chunks:
@@ -128,6 +139,7 @@ def format_chunks_block(chunks: list[RetrievedChunk]) -> str:
             f"{chunk.text}"
         )
     return "\n\n---\n\n".join(parts)
+
 
 def stream_answer(question: str, chunks: list[RetrievedChunk], graph_context: str) -> Iterator[str]:
     llm = get_llm()
@@ -144,6 +156,7 @@ def stream_answer(question: str, chunks: list[RetrievedChunk], graph_context: st
         if isinstance(content, str) and content:
             yield content
 
+
 def ingest_corpus(source: Path | str | None = None, raw_text: str | None = None) -> int:
     client = get_qdrant_client()
     collection = st.session_state.collection_name
@@ -158,12 +171,22 @@ def ingest_corpus(source: Path | str | None = None, raw_text: str | None = None)
         chunks = ingest_file(client, collection, path)
 
     texts = [c.text for c in chunks]
-    engine.ingest_chunks(texts[:10])
+
+    # Limit to top 5 chunks for graph extraction to prevent memory / token rate crashes
+    try:
+        engine.ingest_chunks(texts[:5])
+    except Exception as exc:
+        logger.warning("Graph extraction encountered non-fatal error: %s", exc)
+
     seed_demo_graph(engine)
+
+    # Force free RAM after ingestion completes
+    gc.collect()
 
     st.session_state.indexed = True
     st.session_state.retriever = None
     return len(chunks)
+
 
 def render_sidebar() -> None:
     with st.sidebar:
@@ -171,13 +194,15 @@ def render_sidebar() -> None:
         st.caption(f"Collection: `{st.session_state.collection_name}`")
 
         if st.button("Index sample enterprise policy", use_container_width=True):
-            with st.spinner("Embedding with FastEmbed & extracting graph relations via Groq..."):
+            with st.spinner("Embedding with FastEmbed & extracting graph relations..."):
                 try:
                     n = ingest_corpus(_ensure_sample_policy())
                     st.success(f"Indexed {n} chunks successfully!")
                 except Exception as exc:
                     logger.exception("Ingestion failed")
                     st.error(f"Ingestion failed: {exc}")
+                    with st.expander("Diagnostic Traceback"):
+                        st.code(traceback.format_exc())
 
         uploaded = st.file_uploader("Upload .txt / .md / .pdf", type=["txt", "md", "pdf"])
         if uploaded is not None and st.button("Index uploaded file", use_container_width=True):
@@ -195,6 +220,8 @@ def render_sidebar() -> None:
                 except Exception as exc:
                     logger.exception("Upload ingestion failed")
                     st.error(f"Upload failed: {exc}")
+                    with st.expander("Diagnostic Traceback"):
+                        st.code(traceback.format_exc())
 
         st.divider()
         status = "Ready" if st.session_state.indexed else "Not indexed"
@@ -208,9 +235,10 @@ def render_sidebar() -> None:
             st.session_state.messages = []
             st.rerun()
 
+
 def render_ask_assistant() -> None:
     st.subheader("Ask Assistant")
-    st.caption("Hybrid dense + BM25 retrieval → Cohere rerank → Groq Llama-3.3 70B answer + Graph Context.")
+    st.caption("Hybrid dense + BM25 retrieval → Cohere rerank → Groq Qwen 27B answer + Graph Context.")
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
@@ -249,6 +277,8 @@ def render_ask_assistant() -> None:
             logger.exception("Chat turn failed")
             answer = f"Error: `{exc}`"
             st.error(answer)
+            with st.expander("Diagnostic Traceback"):
+                st.code(traceback.format_exc())
 
         record = {
             "role": "assistant",
@@ -258,6 +288,7 @@ def render_ask_assistant() -> None:
         }
         st.session_state.messages.append(record)
         _render_answer_expanders(record)
+
 
 def _render_answer_expanders(message: dict[str, Any]) -> None:
     chunks_data = message.get("chunks") or []
@@ -281,6 +312,7 @@ def _render_answer_expanders(message: dict[str, Any]) -> None:
             st.markdown(f"```\n{graph_context}\n```")
         else:
             st.info("No graph neighborhood matched this question.")
+
 
 def render_graph_visualizer() -> None:
     st.subheader("Knowledge Graph Visualizer")
@@ -346,6 +378,7 @@ def render_graph_visualizer() -> None:
                 rows.append({"Subject": u, "Predicate": pred, "Object": v})
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
+
 def render_ragas_benchmark() -> None:
     st.subheader("Ragas Benchmark Audit")
     st.caption("Synthetic evaluation snapshot comparing vanilla vector search against our Hybrid GraphRAG stack.")
@@ -374,6 +407,7 @@ def render_ragas_benchmark() -> None:
     chart_df = comparison.pivot(index="Metric", columns="System", values="Score")[["Vanilla Vector Search", "Our Hybrid GraphRAG"]]
     st.bar_chart(chart_df, height=360, color=["#94A3B8", "#0F766E"])
 
+
 def main() -> None:
     st.set_page_config(
         page_title="Enterprise Hybrid GraphRAG",
@@ -386,7 +420,7 @@ def main() -> None:
     st.title("Enterprise Hybrid GraphRAG")
     st.markdown(
         "Hybrid retrieval (**dense + BM25**) · **Cohere Rerank v3** · "
-        "**NetworkX** knowledge graph · **Groq Llama-3.3-70B**"
+        "**NetworkX** knowledge graph · **Groq Qwen 27B**"
     )
 
     render_sidebar()
@@ -400,6 +434,7 @@ def main() -> None:
         render_graph_visualizer()
     with tab_ragas:
         render_ragas_benchmark()
+
 
 if __name__ == "__main__":
     main()
