@@ -1,3 +1,4 @@
+import gc
 import os
 import uuid
 from pathlib import Path
@@ -17,12 +18,12 @@ from fastembed import TextEmbedding, SparseTextEmbedding
 
 # Model and vector configuration constants
 DENSE_MODEL = "BAAI/bge-small-en-v1.5"
-SPARSE_MODEL = "prithivida/Splade_PP_en_v1"
+SPARSE_MODEL = "Qdrant/bm25"  # Lightweight BM25 instead of 500MB+ neural SPLADE
 DENSE_VECTOR_NAME = "dense"
 SPARSE_VECTOR_NAME = "sparse"
 VECTOR_SIZE = 384
 
-# Initialize local FastEmbed models
+# Initialize local FastEmbed models lazily or in single instances
 _dense_embedding_model = TextEmbedding(model_name=DENSE_MODEL)
 _sparse_embedding_model = SparseTextEmbedding(model_name=SPARSE_MODEL)
 
@@ -32,10 +33,8 @@ class DocumentChunk(BaseModel):
     metadata: dict = {}
 
 def initialize_collection(client: QdrantClient, collection_name: str) -> None:
-    # If the collection exists with mismatched vector configurations, recreate it
     if client.collection_exists(collection_name):
         info = client.get_collection(collection_name)
-        # Check if 'sparse' is missing from sparse vectors configuration
         sparse_config = getattr(info.config, "sparse_vectors_config", {}) or {}
         if SPARSE_VECTOR_NAME not in sparse_config:
             client.delete_collection(collection_name)
@@ -97,37 +96,44 @@ def ingest_file(client: QdrantClient, collection_name: str, file_path: Path | st
     _index_chunks(client, collection_name, chunks)
     return chunks
 
-def _index_chunks(client: QdrantClient, collection_name: str, chunks: List[DocumentChunk]):
-    texts = [c.text for c in chunks]
-    
-    # 1. Compute dense embeddings locally
-    dense_embeddings = list(_dense_embedding_model.embed(texts))
-    
-    # 2. Compute sparse SPLADE/BM25 embeddings locally
-    sparse_embeddings = list(_sparse_embedding_model.embed(texts))
+def _index_chunks(client: QdrantClient, collection_name: str, chunks: List[DocumentChunk], batch_size: int = 4):
+    """Embed and upsert chunks in small batches to strictly stay within Streamlit Cloud memory limits."""
+    for i in range(0, len(chunks), batch_size):
+        batch = chunks[i : i + batch_size]
+        batch_texts = [c.text for c in batch]
+        
+        # 1. Compute dense embeddings for batch
+        dense_embeddings = list(_dense_embedding_model.embed(batch_texts))
+        
+        # 2. Compute BM25 sparse embeddings for batch
+        sparse_embeddings = list(_sparse_embedding_model.embed(batch_texts))
 
-    points = []
-    for chunk, dense_emb, sparse_emb in zip(chunks, dense_embeddings, sparse_embeddings):
-        payload = dict(chunk.metadata)
-        payload["document"] = chunk.text
-        payload["text"] = chunk.text
+        points = []
+        for chunk, dense_emb, sparse_emb in zip(batch, dense_embeddings, sparse_embeddings):
+            payload = dict(chunk.metadata)
+            payload["document"] = chunk.text
+            payload["text"] = chunk.text
 
-        points.append(
-            PointStruct(
-                id=chunk.id,
-                vector={
-                    DENSE_VECTOR_NAME: dense_emb.tolist(),
-                    SPARSE_VECTOR_NAME: SparseVector(
-                        indices=sparse_emb.indices.tolist(),
-                        values=sparse_emb.values.tolist(),
-                    ),
-                },
-                payload=payload,
+            points.append(
+                PointStruct(
+                    id=chunk.id,
+                    vector={
+                        DENSE_VECTOR_NAME: dense_emb.tolist(),
+                        SPARSE_VECTOR_NAME: SparseVector(
+                            indices=sparse_emb.indices.tolist(),
+                            values=sparse_emb.values.tolist(),
+                        ),
+                    },
+                    payload=payload,
+                )
             )
+
+        # 3. Upsert current batch to Qdrant Cloud
+        client.upsert(
+            collection_name=collection_name,
+            points=points,
         )
 
-    # 3. Upsert points containing both dense and sparse vectors
-    client.upsert(
-        collection_name=collection_name,
-        points=points,
-    )
+        # Clean memory immediately after each batch
+        del dense_embeddings, sparse_embeddings, points, batch_texts
+        gc.collect()
